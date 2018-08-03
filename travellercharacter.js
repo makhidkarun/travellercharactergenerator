@@ -262,7 +262,7 @@ s.navy = {
         }
     },
     doPromotion: function() {
-        if (this.rank == 5 || 6) {
+        if (this.rank == 5 || this.rank == 6) {
             this.improveAttribute('social', 1);
         }
     },
