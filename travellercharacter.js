@@ -144,6 +144,24 @@ function cascadeBlade() {
         return arnd(blades);
     }
 }
+function cascadeBow() {
+    // Call like cascadeBlade.call(t)
+    var bows = ['Sling', 'Short Bow', 'Long Bow', 'Sporting Crossbow', 'Military Crossbow', 'Repeating Crossbow'];
+    var knownBows = [];
+    if (this.urlParam('cascade') == 'skip') {
+        return 'Blade';
+    }
+    for (var i = 0, limit = this.skills.length; i < limit; i++) {
+        if (bows.indexOf(this.skills[i][0]) > -1) {
+            knownBows.push(this.skills[i][0]);
+        }
+    }
+    if (knownBows.length > 0) {
+        return arnd(knownBows);
+    } else {
+        return arnd(bows);
+    }
+}
 function cascadeGun() {
     // Call like cascadeGun.call(t)
     var guns = ['Body Pistol', 'Auto Pistol', 'Revolver', 'Carbine', 'Rifle', 'Auto Rifle', 'Shotgun', 'SMG', 'Laser Carbine', 'Laser Rifle'];
@@ -180,12 +198,54 @@ function cascadeVehicle() {
         return arnd(vehicles);
     }
 }
+function cascadeAircraft() {
+    // Call like cascadeVehicle.call(t)
+    var aircrafts = ['Prop-Driven Aircraft', 'Jet-Driven Aircraft', 'Helicopter', 'Grav Vehicle'];
+    var knownAircrafts = [];
+    if (this.urlParam('cascade') == 'skip') {
+        return 'Aircraft';
+    }
+    for (var i = 0, limit = this.skills.length; i < limit; i++) {
+        if (aircrafts.indexOf(this.skills[i][0]) > -1) {
+            knownAircrafts.push(this.skills[i][0]);
+        }
+    }
+    if (knownAircrafts.length > 0) {
+        return arnd(knownAircrafts);
+    } else {
+        return arnd(aircrafts);
+    }
+}
+function cascadeServiceAircraft() {
+    // Call like cascadeVehicle.call(t)
+    var aircrafts = ['Prop-Driven Aircraft', 'Jet-Driven Aircraft', 'Helicopter', 'Grav Vehicle'];
+    return arnd(aircrafts);
+}
+function cascadeWatercraft() {
+    // Call like cascadeWatercraft.call(t)
+    var watercrafts = ['Small Watercraft', 'Hovercraft'];
+    var knownWatercrafts = [];
+    if (this.urlParam('cascade') == 'skip') {
+        return 'Watercraft';
+    }
+    for (var i = 0, limit = this.skills.length; i < limit; i++) {
+        if (watercrafts.indexOf(this.skills[i][0]) > -1) {
+            knownWatercrafts.push(this.skills[i][0]);
+        }
+    }
+    if (knownWatercrafts.length > 0) {
+        return arnd(knownWatercrafts);
+    } else {
+        return arnd(watercrafts);
+    }
+}
 
 //---------------- "s" object holds service definitions ----------------//
 var s = {};
-s.services = ['navy', 'marines', 'army', 'scouts', 'merchants', 'other'];
+s.services = ['navy', 'marines', 'army', 'scouts', 'merchants', 'pirates', 'other', 'belters', 'sailors', 'diplomats', 'doctors', 'flyers', 'barbarians', 'bureaucrats', 'rogues', 'scientists', 'hunters'];
+s.draftservices = ['navy', 'marines', 'army', 'scouts', 'sailors', 'flyers'];
 s.draft = function () {
-    return arnd(this.services);
+    return arnd(this.draftservices);
 };
 //---------------- Define "Navy" service ----------------//
 s.navy = {
@@ -1123,6 +1183,1816 @@ s.other = {
         }
     }
 };
+//---------------- Define "Pirate" service ----------------//
+s.pirates = {
+    serviceName: 'Pirate', // like "in the Navy"
+    memberName: 'Pirate', // like "Navy Admiral Nelson"
+    adjName: "Pirate", // like "the Naval service"
+    enlistmentThrow: 7,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.social <= 7) { dm += 1; }
+        if (attributes.endurance >= 9) { dm += 2; }
+        return dm;
+    },
+    survivalThrow: 6,
+    survivalDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 8) { dm += 2; }
+        return dm;
+    },
+    commissionThrow: 9,
+    commissionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.strength >= 10) { dm += 1; }
+        return dm;
+    },
+    promotionThrow: 8,
+    promotionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 9) { dm += 1; }
+        return dm;
+    },
+    getServiceSkills: function () { return ['Brawling']; },
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.intelligence >= 8) { dm += 2; }
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 5);
+        if ((sv + dm) >= 5) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 7,
+    ranks: {
+        0: 'Henchmen',
+        1: 'Corporal',
+        2: 'Sergeant',
+        3: 'Lt Cmdr',
+        4: 'Leuitenant',
+        5: 'Leader',
+        6: 'Leader'
+    },
+    checkPromotion: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.intelligence >= 9) { dm += 1; }
+        this.verboseHistory('Promotion roll ' + sv + ' + ' + dm + ' vs ' + 8);
+        if ((sv + dm) >= 8) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    checkCommission: function() {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.strength >= 10) { dm += 1; }
+        this.verboseHistory('Commission roll ' + sv + ' + ' + dm + ' vs ' + 10);
+        if ((sv + dm) >= 10) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    doPromotion: function() {
+        if (this.rank == 4) {
+            this.addSkill('Pilot');
+        }
+    },
+    musterCash: {
+        1: 0,
+        2: 0,
+        3: 1000,
+        4: 10000,
+        5: 50000,
+        6: 50000,
+        7: 50000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'Low Passage');
+                break;
+            case 2:
+                this.improveAttribute('intelligence', 1);
+                break;
+            case 3:
+                this.doGunBenefit.call(t);
+                break;
+            case 4:
+                break;
+            case 5:
+                this.improveAttribute('social', -1);
+                break;
+            case 6:
+                this.addBenefit.call(t, 'Mid Passage');
+                break;
+            default:
+                if (this.benefits.indexOf('Corsair') > -1) {
+                    this.debugHistory('No benefit');
+                    break;
+                }
+                this.addBenefit.call(t, 'Corsair');
+                this.ship = true;
+        }
+    },
+    canMuster: function (strategy) {
+        return strategy == 'ship' || strategy == 'special';
+    },
+    acquireSkill: function () {
+        // Skills acquired during a term of service.
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('strength', 1); break;
+                    case 2: this.improveAttribute('dexterity', 1); break;
+                    case 3: this.improveAttribute('endurance', 1); break;
+                    case 4: this.addSkill('Gambling'); break;
+                    case 5: this.addSkill('Brawling'); break;
+                    default: this.addSkill(cascadeBlade.call(this));
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.addSkill(cascadeBlade.call(this)); break;
+                    case 2: this.addSkill('Vacc Suit'); break;
+                    case 3: this.addSkill(cascadeGun.call(this)); break;
+                    case 4: this.addSkill('Gunnery'); break;
+                    case 5: this.addSkill('Zero-G Cbt'); break;
+                    default: this.addSkill(cascadeGun.call(this));
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Streetwise'); break;
+                    case 2: this.addSkill('Gunnery'); break;
+                    case 3: this.addSkill('Engineering'); break;
+                    case 4: this.addSkill('Ship Tactic'); break;
+                    case 5: this.addSkill('Tactics'); break;
+                    default: this.addSkill('Mechanical');
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Navigation'); break;
+                    case 2: this.addSkill('Pilot'); break;
+                    case 3: this.addSkill('Forgery'); break;
+                    case 4: this.addSkill('Computer'); break;
+                    case 5: this.addSkill('Leader'); break;
+                    default: this.addSkill('Electronics');
+                }
+                break;
+        }
+    }
+};
+//---------------- Define "Belter" service ----------------//
+s.belters = {
+    serviceName: 'Belter', // like "in the Navy"
+    memberName: 'Belter', // like "Navy Admiral Nelson"
+    adjName: "Belt", // like "the Naval service"
+    enlistmentThrow: 7,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.dexterity >= 10) { dm += 1; }
+        if (attributes.strength >= 8) { dm += 2; }
+        return dm;
+    },
+    survivalThrow: 9,
+    survivalDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 8) { dm += 2; }
+        return dm;
+    },
+    commissionThrow: 9,
+    commissionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.strength >= 10) { dm += 1; }
+        return dm;
+    },
+    promotionThrow: 8,
+    promotionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 9) { dm += 1; }
+        return dm;
+    },
+    getServiceSkills: function () { return ['Vacc Suit']; },
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.age = 22) {
+           dm += 1;
+        } else if (this.age = 26) {
+           dm += 2;
+        } else if (this.age = 30) {
+           dm += 3;
+        } else if (this.age = 34) {
+           dm += 4;
+        } else if (this.age = 38) {
+           dm += 5;
+        } else if (this.age = 42) {
+           dm += 6;
+        } else if (this.age = 46) {
+           dm += 7;
+        } else if (this.age = 50) {
+           dm += 8;
+        } else {
+           dm += 9;
+    }
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 5);
+        if ((sv + dm) >= 5) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 7,
+    ranks: {
+        0: '',
+        1: '',
+        2: '',
+        3: '',
+        4: '',
+        5: '',
+        6: ''
+    },
+    checkPromotion: function () {
+        return false;
+    },
+    checkCommission: function() {
+        return false;
+    },
+    doPromotion: function() {
+        return;
+    },
+    musterCash: {
+        1: 0,
+        2: 0,
+        3: 1000,
+        4: 10000,
+        5: 100000,
+        6: 100000,
+        7: 100000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'Low Passage');
+                break;
+            case 2:
+                this.improveAttribute('intelligence', 1);
+                break;
+            case 3:
+                this.doGunBenefit.call(t);
+                break;
+            case 4:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            case 5:
+                if (this.benefits.indexOf("Travellers' Aide Society") > -1) {
+                    break;
+                }
+                this.addBenefit.call(t, "Travellers' Aid Society");
+                this.TAS = true;
+                break;
+            case 6:
+                if (this.benefits.indexOf('Seeker') > -1) {
+                    this.debugHistory('No benefit');
+                    break;
+                }
+                this.addBenefit.call(t, 'Seeker');
+                this.ship = true;
+            default:
+                break;
+        }
+    },
+    canMuster: function (strategy) {
+        return strategy == 'ship' || strategy == 'special';
+    },
+    acquireSkill: function () {
+        // Skills acquired during a term of service.
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('strength', 1); break;
+                    case 2: this.improveAttribute('dexterity', 1); break;
+                    case 3: this.improveAttribute('endurance', 1); break;
+                    case 4: this.addSkill('Gambling'); break;
+                    case 5: this.addSkill('Brawling'); break;
+                    default: this.addSkill('Vacc Suit');
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Vacc Suit'); break;
+                    case 2: this.addSkill('Vacc Suit'); break;
+                    case 3: this.addSkill('Prospecting'); break;
+                    case 4: this.addSkill('Fwd Obsvr'); break;
+                    case 5: this.addSkill('Prospecting'); break;
+                    default: this.addSkill("Ship's Boat");
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill("Ship's Boat"); break;
+                    case 2: this.addSkill('Electronics'); break;
+                    case 3: this.addSkill('Prospecting'); break;
+                    case 4: this.addSkill('Mechanical'); break;
+                    case 5: this.addSkill('Prospecting'); break;
+                    default: this.addSkill('Instruction');
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Navigation'); break;
+                    case 2: this.addSkill('Medical'); break;
+                    case 3: this.addSkill('Pilot'); break;
+                    case 4: this.addSkill('Computer'); break;
+                    case 5: this.addSkill('Engineering'); break;
+                    default: this.addSkill('Jack-o-T');
+                }
+                break;
+        }
+    }
+};
+//---------------- Define "Sailor" service ----------------//
+s.sailors = {
+    serviceName: 'Wet Navy', // like "in the Navy"
+    memberName: 'Wet Navy', // like "Navy Admiral Nelson"
+    adjName: "Wet Naval", // like "the Naval service"
+    enlistmentThrow: 6,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.endurance >= 10) { dm += 1; }
+        if (attributes.strength >= 8) { dm += 2; }
+        return dm;
+    },
+    survivalThrow: 5,
+    survivalDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 8) { dm += 2; }
+        return dm;
+    },
+    commissionThrow: 9,
+    commissionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.strength >= 10) { dm += 1; }
+        return dm;
+    },
+    promotionThrow: 8,
+    promotionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 9) { dm += 1; }
+        return dm;
+    },
+    getServiceSkills: function () { return ['Liaison']; },
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.endurance >= 5) { dm += 2; }
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 5);
+        if ((sv + dm) >= 5) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 6,
+    ranks: {
+        0: 'Sailor',
+        1: 'Ensign',
+        2: 'Lieutenant',
+        3: 'Lt Cmdr',
+        4: 'Commander',
+        5: 'Captain',
+        6: 'Admiral'
+    },
+    checkPromotion: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.intelligence >= 9) { dm += 1; }
+        this.verboseHistory('Promotion roll ' + sv + ' + ' + dm + ' vs ' + 8);
+        if ((sv + dm) >= 5) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    checkCommission: function() {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.education >= 8) { dm += 1; }
+        this.verboseHistory('Commission roll ' + sv + ' + ' + dm + ' vs ' + 10);
+        if ((sv + dm) >= 6) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    doPromotion: function() {
+        return;
+    },
+    musterCash: {
+        1: 2000,
+        2: 5000,
+        3: 10000,
+        4: 10000,
+        5: 10000,
+        6: 20000,
+        7: 30000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'Low Passage');
+                break;
+            case 2:
+                this.improveAttribute('education', 1);
+                break;
+            case 3:
+                this.doGunBenefit.call(t);
+                break;
+            case 4:
+                this.doGunBenefit.call(t);
+                break;
+            case 5:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            case 6:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            default:
+                this.improveAttribute('social', 1);
+        }
+    },
+    canMuster: function (strategy) {
+        return false;
+    },
+    acquireSkill: function () {
+        // Skills acquired during a term of service.
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('strength', 1); break;
+                    case 2: this.improveAttribute('dexterity', 1); break;
+                    case 3: this.improveAttribute('endurance', 1); break;
+                    case 4: this.addSkill('Gambling'); break;
+                    case 5: this.addSkill('Brawling'); break;
+                    default: this.addSkill('Carousing');
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.addSkill(cascadeGun.call(this)); break;
+                    case 2: this.addSkill('Commo'); break;
+                    case 3: this.addSkill('Fwd Obsvr'); break;
+                    case 4: this.addSkill(cascadeVehicle.call(this)); break;
+                    case 5: this.addSkill(cascadeVehicle.call(this)); break;
+                    default: this.addSkill('Battle Dress');
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill(cascadeWatercraft.call(this)); break;
+                    case 2: this.addSkill('Electronics'); break;
+                    case 3: this.addSkill('Mechanical'); break;
+                    case 4: this.addSkill('Gravitics'); break;
+                    case 5: this.addSkill('Navigation'); break;
+                    default: this.addSkill('Demolition');
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Medical'); break;
+                    case 2: this.addSkill('Vehicle'); break;
+                    case 3: this.addSkill('Streetwise'); break;
+                    case 4: this.addSkill('Computer'); break;
+                    case 5: this.addSkill('Admin'); break;
+                    default: this.addSkill('Jack-o-T');
+                }
+                break;
+        }
+    }
+};
+//---------------- Define "Diplomat" service ----------------//
+s.diplomats = {
+    serviceName: 'Diplomat Service', // like "in the Navy"
+    memberName: 'Diplomat', // like "Navy Admiral Nelson"
+    adjName: "Diplomat", // like "the Naval service"
+    enlistmentThrow: 8,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.education >= 8) { dm += 1; }
+        if (attributes.social >= 9) { dm += 2; }
+        return dm;
+    },
+    survivalThrow: 3,
+    survivalDM: function (attributes) {
+        var dm = 0;
+        if (attributes.education >= 9) { dm += 2; }
+        return dm;
+    },
+    commissionThrow: 5,
+    commissionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 8) { dm += 1; }
+        return dm;
+    },
+    promotionThrow: 10,
+    promotionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.social >= 10) { dm += 1; }
+        return dm;
+    },
+    getServiceSkills: function () { return ['Liaison']; },
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.education >= 9) { dm += 2; }
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 5);
+        if ((sv + dm) >= 3) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 5,
+    ranks: {
+        0: 'Attache',
+        1: '3rd Secretary',
+        2: '2nd Secretary',
+        3: '1st Secretary',
+        4: 'Counselor',
+        5: 'Minister',
+        6: 'Ambassador'
+    },
+    checkPromotion: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.social >= 10) { dm += 1; }
+        this.verboseHistory('Promotion roll ' + sv + ' + ' + dm + ' vs ' + 8);
+        if ((sv + dm) >= 10) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    checkCommission: function() {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.education >= 9) { dm += 1; }
+        this.verboseHistory('Commission roll ' + sv + ' + ' + dm + ' vs ' + 10);
+        if ((sv + dm) >= 5) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    doPromotion: function() {
+		return;
+    },
+    musterCash: {
+        1: 10000,
+        2: 10000,
+        3: 10000,
+        4: 20000,
+        5: 50000,
+        6: 60000,
+        7: 70000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'Low Passage');
+                break;
+            case 2:
+                this.improveAttribute('intelligence', 1);
+                break;
+            case 3:
+                this.improveAttribute('education', 2);
+                break;
+            case 4:
+                this.doGunBenefit.call(t);
+                break;
+            case 5:
+                this.improveAttribute('social', 1);
+                break;
+            case 6:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            default:
+                if (this.benefits.indexOf("Travellers' Aide Society") > -1) {
+                    break;
+                }
+                this.addBenefit.call(t, "Travellers' Aid Society");
+                this.TAS = true;
+                break;
+        }
+    },
+    canMuster: function (strategy) {
+        return false;
+    },
+    acquireSkill: function () {
+        // Skills acquired during a term of service.
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('strength', 1); break;
+                    case 2: this.improveAttribute('dexterity', 1); break;
+                    case 3: this.improveAttribute('intelligence', 1); break;
+                    case 4: this.addSkill(cascadeBlade.call(this)); break;
+                    case 5: this.addSkill(cascadeGun.call(this)); break;
+                    default: this.addSkill('Carousing');
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('intelligence', 1); break;
+                    case 2: this.addSkill('Vacc Suit'); break;
+                    case 3: this.addSkill(cascadeVehicle.call(this)); break;
+                    case 4: this.addSkill(cascadeVehicle.call(this)); break;
+                    case 5: this.addSkill('Gambling'); break;
+                    default: this.addSkill('Computer');
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Forgery'); break;
+                    case 2: this.addSkill('Streetwise'); break;
+                    case 3: this.addSkill('Interrogation'); break;
+                    case 4: this.addSkill('Recruiting'); break;
+                    case 5: this.addSkill('Instruction'); break;
+                    default: this.addSkill('Admin');
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Liaison'); break;
+                    case 2: this.addSkill('Liaison'); break;
+                    case 3: this.addSkill('Admin'); break;
+                    case 4: this.addSkill('Computer'); break;
+                    case 5: this.improveAttribute('social', 1); break;
+                    default: this.addSkill('Jack-o-T');
+                }
+                break;
+        }
+    }
+};
+//---------------- Define "Doctors" service ----------------//
+s.doctors = {
+    serviceName: 'Medical Field', // like "in the Navy"
+    memberName: 'Doctor', // like "Navy Admiral Nelson"
+    adjName: 'Medical', // like "the Naval service"
+    enlistmentThrow: 9,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 8) { dm += 1; }
+        if (attributes.dexterity >= 9) { dm += 2; }
+        return dm;
+    },
+    survivalThrow: 5,
+    survivalDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence>= 8) { dm += 2; }
+        return dm;
+    },
+    getServiceSkills: function () { return ['Medical']; },
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.intelligence >= 8) { dm += 2; }
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 7);
+        if ((sv + dm) >= 7) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 3,
+    ranks: { 0: '', 1: '', 2: '', 3: '', 4: '', 5: '', 6: '' },
+    checkPromotion: function () {
+        return false;
+    },
+    checkCommission: function() {
+        return false;
+    },
+    doPromotion: function() { return; },
+    musterCash: {
+        1: 20000,
+        2: 20000,
+        3: 20000,
+        4: 30000,
+        5: 40000,
+        6: 60000,
+        7: 1000000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'Low Passage');
+                break;
+            case 2:
+                this.improveAttribute('education', 1);
+                break;
+            case 3:
+                this.improveAttribute('education', 1);
+                break;
+            case 4:
+            	this.doGunBenefit.call(t);
+                break;
+            case 5:
+                if (this.benefits.indexOf('Instruments') > -1) {
+                    this.debugHistory('No benefit');
+                    break;
+                }
+                this.addBenefit.call(t, 'Instruments');
+                break;
+            case 6:
+                this.addBenefit.call(t, 'Mid Passage');
+                break;
+            default:
+                this.improveAttribute('social', 1);
+        }
+    },
+    canMuster: function (strategy) {
+        return strategy == 'ship' || strategy == 'special';
+    },
+    acquireSkill: function () {
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('strength', 1); break;
+                    case 2: this.improveAttribute('dexterity', 1); break;
+                    case 3: this.improveAttribute('endurance', 1); break;
+                    case 4: this.improveAttribute('intelligence', 1); break;
+                    case 5: this.improveAttribute('education', 1); break;
+                    default: this.improveAttribute('social', 1);
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('dexterity', 1); break;
+                    case 2: this.addSkill('Electronics'); break;
+                    case 3: this.addSkill('Medical'); break;
+                    case 4: this.addSkill('Streetwise'); break;
+                    case 5: this.addSkill('Medical'); break;
+                    default: this.addSkill(cascadeBlade.call(this));
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Medical'); break;
+                    case 2: this.addSkill('Medical'); break;
+                    case 3: this.addSkill('Mechanical'); break;
+                    case 4: this.addSkill('Electronics'); break;
+                    case 5: this.addSkill('Computer'); break;
+                    default: this.addSkill('Admin');
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Medical'); break;
+                    case 2: this.addSkill('Medical'); break;
+                    case 3: this.addSkill('Admin'); break;
+                    case 4: this.addSkill('Computer'); break;
+                    case 5: this.improveAttribute('intelligence',1); break;
+                    default: this.improveAttribute('education',1);
+                }
+                break;
+        }
+    }
+};
+//---------------- Define "Flyer" service ----------------//
+s.flyers = {
+    serviceName: 'Aerospace Force', // like "in the Navy"
+    memberName: 'Aerospace', // like "Navy Admiral Nelson"
+    adjName: "Aerospace", // like "the Naval service"
+    enlistmentThrow: 6,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.strength >= 7) { dm += 1; }
+        if (attributes.dexterity >= 9) { dm += 2; }
+        return dm;
+    },
+    survivalThrow: 5,
+    survivalDM: function (attributes) {
+        var dm = 0;
+        if (attributes.dexterity >= 8) { dm += 2; }
+        return dm;
+    },
+    commissionThrow: 5,
+    commissionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.education >= 6) { dm += 1; }
+        return dm;
+    },
+    promotionThrow: 8,
+    promotionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.education >= 8) { dm += 1; }
+        return dm;
+    },
+    getServiceSkills: function () { 
+		result = '';
+		result = cascadeServiceAircraft.call(this);
+		return [result]; 
+	},
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.dexterity >= 8) { dm += 2; }
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 5);
+        if ((sv + dm) >= 5) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 6,
+    ranks: {
+        0: 'Airmen',
+        1: 'Pilot',
+        2: 'Flight Leader',
+        3: 'Sqdrn Leader',
+        4: 'Staff Major',
+        5: 'Group Leader',
+        6: 'Air Marshal'
+    },
+    checkPromotion: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.education >= 8) { dm += 1; }
+        this.verboseHistory('Promotion roll ' + sv + ' + ' + dm + ' vs ' + 8);
+        if ((sv + dm) >= 8) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    checkCommission: function() {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.education >= 5) { dm += 1; }
+        this.verboseHistory('Commission roll ' + sv + ' + ' + dm + ' vs ' + 10);
+        if ((sv + dm) >= 5) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    doPromotion: function() {
+        return;
+    },
+    musterCash: {
+        1: 2000,
+        2: 5000,
+        3: 10000,
+        4: 10000,
+        5: 10000,
+        6: 20000,
+        7: 30000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'Low Passage');
+                break;
+            case 2:
+                this.improveAttribute('education', 1);
+                break;
+            case 3:
+                this.doGunBenefit.call(t);
+                break;
+            case 4:
+                this.doGunBenefit.call(t);
+                break;
+            case 5:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            case 6:
+                this.addBenefit.call(t, 'Mid Passage');
+                break;
+            default:
+                this.improveAttribute('social', 1);
+        }
+    },
+    canMuster: function (strategy) {
+        return false;
+    },
+    acquireSkill: function () {
+        // Skills acquired during a term of service.
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('strength', 1); break;
+                    case 2: this.improveAttribute('dexterity', 1); break;
+                    case 3: this.improveAttribute('endurance', 1); break;
+                    case 4: this.addSkill('Gambling'); break;
+                    case 5: this.addSkill('Brawling'); break;
+                    default: this.addSkill('Carousing');
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Brawling'); break;
+                    case 2: this.addSkill('Vacc Suit'); break;
+                    case 3: this.addSkill(cascadeGun.call(this)); break;
+                    case 4: this.addSkill(cascadeVehicle.call(this)); break;
+                    case 5: this.addSkill(cascadeVehicle.call(this)); break;
+                    default: this.addSkill(cascadeVehicle.call(this));
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill(cascadeAircraft.call(this)); break;
+                    case 2: this.addSkill('Mechanical'); break;
+                    case 3: this.addSkill('Electronics'); break;
+                    case 4: this.addSkill('Gravitics'); break;
+                    case 5: this.addSkill(cascadeGun.call(this)); break;
+                    default: this.addSkill('Survival');
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Medical'); break;
+                    case 2: this.addSkill('Leader'); break;
+                    case 3: this.addSkill('Pilot'); break;
+                    case 4: this.addSkill('Computer'); break;
+                    case 5: this.addSkill('Admin'); break;
+                    default: this.addSkill('Jack-o-T');
+                }
+                break;
+        }
+    }
+};
+//---------------- Define "Barbarians" service ----------------//
+s.barbarians = {
+    serviceName: 'Barbarian', // like "in the Navy"
+    memberName: 'Barbarian', // like "Navy Admiral Nelson"
+    adjName: "Barbarian", // like "the Naval service"
+    enlistmentThrow: 5,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.endurance >= 9) { dm += 1; }
+        if (attributes.strength >= 10) { dm += 2; }
+        return dm;
+    },
+    survivalThrow: 6,
+    survivalDM: function (attributes) {
+        var dm = 0;
+        if (attributes.strength >= 8) { dm += 2; }
+        return dm;
+    },
+    commissionThrow: 6,
+    commissionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.strength >= 10) { dm += 1; }
+        return dm;
+    },
+    promotionThrow: 9,
+    promotionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 6) { dm += 1; }
+        return dm;
+    },
+    getServiceSkills: function () { 
+		result = 'Sword';
+		return [result]; 
+	},
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.strength >= 8) { dm += 2; }
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 5);
+        if ((sv + dm) >= 6) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 6,
+    ranks: {
+        0: 'Barbarian',
+        1: 'Barbarian',
+        2: 'Warrior',
+        3: 'Warrior',
+        4: 'Warrior',
+        5: 'Chief',
+        6: 'Chief'
+    },
+    checkPromotion: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.intelligence >= 6) { dm += 1; }
+        this.verboseHistory('Promotion roll ' + sv + ' + ' + dm + ' vs ' + 8);
+        if ((sv + dm) >= 9) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    checkCommission: function() {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.strength >= 8) { dm += 1; }
+        this.verboseHistory('Commission roll ' + sv + ' + ' + dm + ' vs ' + 10);
+        if ((sv + dm) >= 6) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    doPromotion: function() {
+        if (this.rank == 2) {
+            this.addSkill(cascadeBlade.call(this));
+        } else if (this.rank == 5) {
+            this.addSkill('leader');
+        }
+        return;
+    },
+    musterCash: {
+        1: 0,
+        2: 0,
+        3: 1000,
+        4: 2000,
+        5: 3000,
+        6: 4000,
+        7: 5000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'Low Passage');
+                break;
+            case 2:
+                this.doBladeBenefit.call(t);
+                break;
+            case 3:
+                this.doBladeBenefit.call(t);
+                break;
+            case 4:
+                this.doBladeBenefit.call(t);
+                break;
+            case 5:
+                break;
+            case 6:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            default:
+                this.addBenefit.call(t, 'High Passage');
+        }
+    },
+    canMuster: function (strategy) {
+        return false;
+    },
+    acquireSkill: function () {
+        // Skills acquired during a term of service.
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('strength', 1); break;
+                    case 2: this.improveAttribute('strength', 2); break;
+                    case 3: this.improveAttribute('strength', 1); break;
+                    case 4: this.addSkill('Carousing'); break;
+                    case 5: this.improveAttribute('dexterity',1); break;
+                    default: this.improveAttribute('endurance',1);
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Brawling'); break;
+                    case 2: this.addSkill(cascadeBlade.call(this)); break;
+                    case 3: this.addSkill(cascadeBlade.call(this)); break;
+                    case 4: this.addSkill(cascadeBow.call(this)); break;
+                    case 5: this.addSkill(cascadeBow.call(this)); break;
+                    default: this.addSkill(cascadeGun.call(this));
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill(cascadeBlade.call(this)); break;
+                    case 2: this.addSkill('Mechanical'); break;
+                    case 3: this.addSkill('Survival'); break;
+                    case 4: this.addSkill('Recon'); break;
+                    case 5: this.addSkill('Streetwise'); break;
+                    default: this.addSkill(cascadeBow.call(this));
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Medical'); break;
+                    case 2: this.addSkill('Interrogation'); break;
+                    case 3: this.addSkill('Tactics'); break;
+                    case 4: this.addSkill('Leader'); break;
+                    case 5: this.addSkill('Instruction'); break;
+                    default: this.addSkill('Jack-o-T');
+                }
+                break;
+        }
+    }
+};
+//---------------- Define "Bureaucrats" service ----------------//
+s.bureaucrats = {
+    serviceName: 'Bureaucracy', // like "in the Navy"
+    memberName: 'Bureaucrat', // like "Navy Admiral Nelson"
+    adjName: "Bureaucracy", // like "the Naval service"
+    enlistmentThrow: 5,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.education >= 8) { dm += 1; }
+        if (attributes.strength <= 8) { dm += 2; }
+        return dm;
+    },
+    survivalThrow: 4,
+    survivalDM: function (attributes) {
+        var dm = 0;
+        if (attributes.education >= 10) { dm += 2; }
+        return dm;
+    },
+    commissionThrow: 6,
+    commissionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.social >= 9) { dm += 1; }
+        return dm;
+    },
+    promotionThrow: 7,
+    promotionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 9) { dm += 1; }
+        return dm;
+    },
+    getServiceSkills: function () { return []; },
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.education >= 10) { dm += 2; }
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 5);
+        if ((sv + dm) >= 4) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 7,
+    ranks: {
+        0: 'Bureaucrat',
+        1: 'Clerk',
+        2: 'Supervisor',
+        3: 'Asst Manager',
+        4: 'Manager',
+        5: 'Executive',
+        6: 'Director'
+    },
+    checkPromotion: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.intelligence >= 9) { dm += 1; }
+        this.verboseHistory('Promotion roll ' + sv + ' + ' + dm + ' vs ' + 8);
+        if ((sv + dm) >= 7) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    checkCommission: function() {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.social >= 9) { dm += 1; }
+        this.verboseHistory('Commission roll ' + sv + ' + ' + dm + ' vs ' + 10);
+        if ((sv + dm) >= 6) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    doPromotion: function() {
+		return;
+    },
+    musterCash: {
+        1: 0,
+        2: 0,
+        3: 10000,
+        4: 10000,
+        5: 40000,
+        6: 40000,
+        7: 80000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'Low Passage');
+                break;
+            case 2:
+                this.addBenefit.call(t, 'Mid Passage');
+                break;
+            case 3:
+                break;
+            case 4:
+                if (this.benefits.indexOf("Watch") > -1) {
+                    break;
+                }
+                this.addBenefit.call(t, "Watch");
+                break;
+            case 5:
+                break;
+            case 6:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            default:
+                this.improveAttribute('social', 1);
+                break;
+        }
+    },
+    canMuster: function (strategy) {
+        return false;
+    },
+    acquireSkill: function () {
+        // Skills acquired during a term of service.
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('endurance', 1); break;
+                    case 2: this.improveAttribute('education', 1); break;
+                    case 3: this.improveAttribute('intelligence', 1); break;
+                    case 4: this.addSkill('Brawling'); break;
+                    case 5: this.addSkill('Carousing'); break;
+                    default: this.improveAttribute('dexterity', 1);
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.addSkill(cascadeGun.call(this)); break;
+                    case 2: this.addSkill(cascadeVehicle.call(this)); break;
+                    case 3: this.addSkill(cascadeBlade.call(this)); break;
+                    case 4: this.addSkill('Instruction'); break;
+                    case 5: this.addSkill(cascadeVehicle.call(this)); break;
+                    default: this.improveAttribute('education',1);
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Recruiting'); break;
+                    case 2: this.addSkill(cascadeVehicle.call(this)); break;
+                    case 3: this.addSkill('Liaison'); break;
+                    case 4: this.addSkill('Interrogation'); break;
+                    case 5: this.addSkill('Admin'); break;
+                    default: this.addSkill('Admin');
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Admin'); break;
+                    case 2: this.addSkill('Admin'); break;
+                    case 3: this.addSkill('Computer'); break;
+                    case 4: this.addSkill('Computer'); break;
+                    case 5: this.addSkill('Admin'); break;
+                    default: this.addSkill('Jack-o-T');
+                }
+                break;
+        }
+    }
+};
+//---------------- Define "Rogue" service ----------------//
+s.rogues = {
+    serviceName: 'criminal life', // like "in the Navy"
+    memberName: 'Rogue', // like "Navy Admiral Nelson"
+    adjName: 'criminal', // like "the Naval service"
+    enlistmentThrow: 6,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.social <= 8) { dm += 1; }
+        if (attributes.endurance >= 7) { dm += 2; }
+        return dm;
+    },
+    survivalThrow: 6,
+    survivalDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 9) { dm += 2; }
+        return dm;
+    },
+    getServiceSkills: function () { return ['Streetwise']; },
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.intelligence >= 9) { dm += 2; }
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 5);
+        if ((sv + dm) >= 6) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 6,
+    ranks: { 0: '', 1: '', 2: '', 3: '', 4: '', 5: '', 6: '' },
+    checkPromotion: function () {
+        return false;
+    },
+    checkCommission: function () {
+        return false;
+    },
+    doPromotion: function() { return; },
+    musterCash: {
+        1: 0,
+        2: 0,
+        3: 10000,
+        4: 10000,
+        5: 50000,
+        6: 100000,
+        7: 100000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'Low Passage');
+                break;
+            case 2:
+                this.improveAttribute('social', 1);
+                break;
+            case 3:
+            	this.doGunBenefit.call(t);
+                break;
+            case 4:
+            	this.doBladeBenefit.call(t);
+                break;
+            case 5:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            default:
+                if (this.benefits.indexOf("Travellers' Aide Society") > -1) {
+                    break;
+                }
+                this.addBenefit.call(t, "Travellers' Aid Society");
+                this.TAS = true;
+                break;
+        }
+    },
+    canMuster: function (strategy) {
+        return false;
+    },
+    acquireSkill: function () {
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('strength', 1); break;
+                    case 2: this.improveAttribute('dexterity', 1); break;
+                    case 3: this.improveAttribute('endurance', 1); break;
+                    case 4: this.improveAttribute('intelligence', 1); break;
+                    case 5: this.addSkill('Brawling'); break;
+                    default: this.addSkill('Carousing');
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.addSkill(cascadeBlade.call(this)); break;
+                    case 2: this.addSkill(cascadeGun.call(this)); break;
+                    case 3: this.addSkill('Demolition'); break;
+                    case 4: this.addSkill(cascadeVehicle.call(this)); break;
+                    case 5: this.improveAttribute('education',1); break;
+                    default: this.addSkill(cascadeVehicle.call(this));
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Streetwise'); break;
+                    case 2: this.addSkill('Forgery'); break;
+                    case 3: this.addSkill('Bribery'); break;
+                    case 4: this.addSkill('Carousing'); break;
+                    case 5: this.addSkill('Liaison'); break;
+                    default: this.addSkill('Ship Tactics');
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Medical'); break;
+                    case 2: this.addSkill('Bribery'); break;
+                    case 3: this.addSkill('Electronics'); break;
+                    case 4: this.addSkill('Forgery'); break;
+                    case 5: this.addSkill('Computer'); break;
+                    default: this.addSkill('Jack-o-T');
+                }
+                break;
+        }
+    }
+};
+//---------------- Define "Noble" service ----------------//
+s.nobles = {
+    serviceName: 'Nobility', // like "in the Navy"
+    memberName: 'Noble', // like "Navy Admiral Nelson"
+    adjName: "Nobility", // like "the Naval service"
+    enlistmentThrow: 3,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.social <= 9) { dm -= 12; }
+        if (attributes.social >= 10) { dm += 12; }
+        return dm;
+    },
+    survivalThrow: 3,
+    survivalDM: function (attributes) {
+        return 0;
+    },
+    commissionThrow: 5,
+    commissionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.education >= 9) { dm += 1; }
+        return dm;
+    },
+    promotionThrow: 12,
+    promotionDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 10) { dm += 1; }
+        return dm;
+    },
+    getServiceSkills: function () { 
+		return []; 
+	},
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 5);
+        if ((sv + dm) >= 3) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 5,
+    ranks: {
+        0: 'Noble',
+        1: 'B Baron',
+        2: 'C Baron',
+        3: 'D Marquis',
+        4: 'E Count',
+        5: 'F Duke',
+        6: 'F Duke (sector)'
+    },
+    checkPromotion: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.int >= 10) { dm += 1; }
+        this.verboseHistory('Promotion roll ' + sv + ' + ' + dm + ' vs ' + 8);
+        if ((sv + dm) >= 12) {
+            if (this.social < 12) {
+               this.improveAttribute('social',1);
+            }
+            return true;
+        } else {
+            return false;
+        }
+    },
+    checkCommission: function() {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.education >= 9) { dm += 1; }
+        this.verboseHistory('Commission roll ' + sv + ' + ' + dm + ' vs ' + 10);
+        if ((sv + dm) >= 5) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    doPromotion: function() {
+        var rank_social = this.rank + 10;
+        if (this.attributes['social'] < rank_social) {
+            this.attributes['social'] = rank_social;
+        }
+    },
+    musterCash: {
+        1: 10000,
+        2: 50000,
+        3: 50000,
+        4: 100000,
+        5: 100000,
+        6: 100000,
+        7: 200000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            case 2:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            case 3:
+                this.doGunBenefit.call(t);
+                break;
+            case 4:
+                this.doBladeBenefit.call(t);
+                break;
+            case 5:
+                if (this.benefits.indexOf("Travellers' Aide Society") > -1) {
+                    break;
+                }
+                this.addBenefit.call(t, "Travellers' Aid Society");
+                this.TAS = true;
+                break;
+            default:
+                if (this.benefits.indexOf('Yacht') > -1) {
+                    this.debugHistory('No benefit');
+                    break;
+                }
+                this.addBenefit.call(t, 'Yacht');
+                this.ship = true;
+                break;
+        }
+    },
+    canMuster: function (strategy) {
+        return strategy == 'ship' || strategy == 'special';
+    },
+    acquireSkill: function () {
+        // Skills acquired during a term of service.
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('strength', 1); break;
+                    case 2: this.improveAttribute('dexterity', 1); break;
+                    case 3: this.improveAttribute('endurance', 1); break;
+                    case 4: this.improveAttribute('intelligence',1); break;
+                    case 5: this.addSkill('Carousing'); break;
+                    default: this.addSkill('Brawling');
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.addSkill(cascadeGun.call(this)); break;
+                    case 2: this.addSkill(cascadeBlade.call(this)); break;
+                    case 3: this.addSkill('Hunting'); break;
+                    case 4: this.addSkill(cascadeVehicle.call(this)); break;
+                    case 5: this.addSkill('Bribery'); break;
+                    default: this.improveAttribute('dexterity',1);
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Pilot'); break;
+                    case 2: this.addSkill("Ship's Boat"); break;
+                    case 3: this.addSkill(cascadeVehicle.call(this)); break;
+                    case 4: this.addSkill('Navigation'); break;
+                    case 5: this.addSkill('Engineering'); break;
+                    default: this.addSkill('Leader');
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Medical'); break;
+                    case 2: this.addSkill('Computer'); break;
+                    case 3: this.addSkill('Admin'); break;
+                    case 4: this.addSkill('Liaison'); break;
+                    case 5: this.addSkill('Leader'); break;
+                    default: this.addSkill('Jack-o-T');
+                }
+                break;
+        }
+    }
+};
+//---------------- Define "Scientists" service ----------------//
+s.scientists = {
+    serviceName: 'field of science', // like "in the Navy"
+    memberName: 'Scientist', // like "Navy Admiral Nelson"
+    adjName: 'scientific study', // like "the Naval service"
+    enlistmentThrow: 6,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.intelligence >= 9) { dm += 1; }
+        if (attributes.education >= 10) { dm += 2; }
+        return dm;
+    },
+    survivalThrow: 5,
+    survivalDM: function (attributes) {
+        var dm = 0;
+        if (attributes.education >= 9) { dm += 2; }
+        return dm;
+    },
+    getServiceSkills: function () { return ['Computer']; },
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.education >= 9) { dm += 2; }
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 5);
+        if ((sv + dm) >= 5) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 4,
+    ranks: { 0: '', 1: '', 2: '', 3: '', 4: '', 5: '', 6: '' },
+    checkPromotion: function () {
+        return false;
+    },
+    checkCommission: function () {
+        return false;
+    },
+    doPromotion: function() { return; },
+    musterCash: {
+        1: 1000,
+        2: 2000,
+        3: 5000,
+        4: 10000,
+        5: 20000,
+        6: 30000,
+        7: 40000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'Low Passage');
+                break;
+            case 2:
+                this.addBenefit.call(t, 'Mid Passage');
+                break;
+            case 3:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            case 4:
+                this.improveAttribute('social', 1);
+                break;
+            case 5:
+            	this.doGunBenefit.call(t);
+                break;
+            default:
+                if (this.benefits.indexOf('Lab Ship') > -1) {
+                    this.debugHistory('No benefit');
+                    break;
+                }
+                this.addBenefit.call(t, 'Lab Ship');
+                this.ship = true;
+                break;
+        }
+    },
+    canMuster: function (strategy) {
+        return strategy == 'ship' || strategy == 'special';
+    },
+    acquireSkill: function () {
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('strength', 1); break;
+                    case 2: this.improveAttribute('dexterity', 1); break;
+                    case 3: this.improveAttribute('endurance', 1); break;
+                    case 4: this.improveAttribute('intelligence', 1); break;
+                    case 5: this.improveAttribute('education', 1); break;
+                    default: this.addSkill('Carousing');
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.addSkill(cascadeGun.call(this)); break;
+                    case 2: this.addSkill(cascadeBlade.call(this)); break;
+                    case 3: this.addSkill(cascadeVehicle.call(this)); break;
+                    case 4: this.addSkill('Jack-o-T'); break;
+                    case 5: this.addSkill('Navigation'); break;
+                    default: this.addSkill('Survival');
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Mechanical'); break;
+                    case 2: this.addSkill('Electronics'); break;
+                    case 3: this.addSkill('Gravitics'); break;
+                    case 4: this.addSkill('Computer'); break;
+                    case 5: this.improveAttribute('intelligence',1); break;
+                    default: this.improveAttribute('education',1);
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Medical'); break;
+                    case 2: this.addSkill('Computer'); break;
+                    case 3: this.addSkill('Admin'); break;
+                    case 4: this.addSkill('Leader'); break;
+                    case 5: this.improveAttribute('intelligence',1); break;
+                    default: this.addSkill('Jack-o-T');
+                }
+                break;
+        }
+    }
+};
+//---------------- Define "Hunters" service ----------------//
+s.hunters = {
+    serviceName: 'Hunters', // like "in the Navy"
+    memberName: 'Hunter', // like "Navy Admiral Nelson"
+    adjName: 'Hunting business', // like "the Naval service"
+    enlistmentThrow: 9,
+    enlistmentDM: function (attributes) {
+        var dm = 0;
+        if (attributes.dexterity >= 10) { dm += 1; }
+        if (attributes.endurance >= 9) { dm += 2; }
+        return dm;
+    },
+    survivalThrow: 6,
+    survivalDM: function (attributes) {
+        var dm = 0;
+        if (attributes.strength >= 10) { dm += 2; }
+        return dm;
+    },
+    getServiceSkills: function () { return ['Hunting']; },
+    checkSurvival: function () {
+        var dm = 0;
+        var sv = roll(2);
+        if (this.attributes.strength >= 10) { dm += 2; }
+        this.verboseHistory('Survival roll ' + sv + ' + ' + dm + ' vs ' + 7);
+        if ((sv + dm) >= 6) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reenlistThrow: 3,
+    ranks: { 0: '', 1: '', 2: '', 3: '', 4: '', 5: '', 6: '' },
+    checkPromotion: function () {
+        return false;
+    },
+    checkCommission: function() {
+        return false;
+    },
+    doPromotion: function() { return; },
+    musterCash: {
+        1: 1000,
+        2: 1000,
+        3: 5000,
+        4: 5000,
+        5: 10000,
+        6: 100000,
+        7: 100000
+    },
+    musterBenefits: function (dm) {
+        switch(roll(1) + dm) {
+            case 1:
+                this.addBenefit.call(t, 'Low Passage');
+                break;
+            case 2:
+                this.addBenefit.call(t, 'High Passage');
+                break;
+            case 3:
+            	this.doGunBenefit.call(t);
+                break;
+            case 4:
+            	this.doGunBenefit.call(t);
+                break;
+            case 5:
+            	this.doGunBenefit.call(t);
+                break;
+            default:
+                if (this.benefits.indexOf('Safari Ship') > -1) {
+                    this.debugHistory('No benefit');
+                    break;
+                }
+                this.addBenefit.call(t, 'Safari Ship');
+                this.ship = true;
+                break;
+        }
+    },
+    canMuster: function (strategy) {
+        return strategy == 'ship' || strategy == 'special';
+    },
+    acquireSkill: function () {
+        switch(this.whichSkillTable.call(this)) {
+            case 1:
+                switch(roll(1)) {
+                    case 1: this.improveAttribute('strength', 1); break;
+                    case 2: this.improveAttribute('dexterity', 1); break;
+                    case 3: this.improveAttribute('endurance', 1); break;
+                    case 4: this.improveAttribute('intelligence', 1); break;
+                    case 5: this.addSkill(cascadeGun.call(this)); break;
+                    default: this.addSkill(cascadeBlade.call(this));
+                }
+                break;
+            case 2:
+                switch(roll(1)) {
+                    case 1: this.addSkill(cascadeGun.call(this)); break;
+                    case 2: this.addSkill(cascadeBlade.call(this)); break;
+                    case 3: this.addSkill('Survival'); break;
+                    case 4: this.addSkill('Hunting'); break;
+                    case 5: this.addSkill(cascadeVehicle.call(this)); break;
+                    default: this.addSkill('Hunting');
+                }
+                break;
+            case 3:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Mechanical'); break;
+                    case 2: this.addSkill('Electronics'); break;
+                    case 3: this.addSkill('Gravitics'); break;
+                    case 4: this.addSkill('Computer'); break;
+                    case 5: this.addSkill('Hunting'); break;
+                    default: this.addSkill('Admin');
+                }
+                break;
+            case 4:
+                switch(roll(1)) {
+                    case 1: this.addSkill('Medical'); break;
+                    case 2: this.addSkill('Computer'); break;
+                    case 3: this.addSkill('Hunting'); break;
+                    case 4: this.addSkill('Leader'); break;
+                    case 5: this.addSkill('Survival'); break;
+                    default: this.addSkill('Admin');
+                }
+                break;
+        }
+    }
+};
 
 //------------ "t" object holds Traveller character definitions ------------//
 var t = {};
@@ -1309,6 +3179,12 @@ t.determineService = function() {
         // Initially pick a random service
         preferredService = arnd(s.services);
     }
+	if (t.attributes['social'] >= 10) {
+		var noble_roll = roll(1);
+		if (noble_roll <= 2) {
+			preferredService = 'nobles';
+		}
+	}
 
     // Compute the initial service pick's DM, if it's less than minscore,
     // bump it to minscore to favor the chosen service.
@@ -1396,8 +3272,18 @@ t.doServiceTerm = function () {
         t.terms + ' age ' + t.age);
     if (t.service == 'scouts') {
         t.skillPoints += 2;
+    } else if (t.service == 'belters') {
+        t.skillPoints += 2;
+    } else if (t.service == 'doctors') {
+        t.skillPoints += 2;
+    } else if (t.service == 'rogues') {
+        t.skillPoints += 2;
+    } else if (t.service == 'scientists') {
+        t.skillPoints += 2;
+    } else if (t.service == 'hunters') {
+        t.skillPoints += 2;
     } else if (t.terms == 1) {
-    	t.skillPoints += 2;
+        t.skillPoints += 2;
     } else {
         t.skillPoints += 1;
     }
@@ -1527,7 +3413,7 @@ t.doReenlistment = function () {
         t.history.push('Reached selected maximum number of terms, skipping re-enlistment');
         t.activeDuty = false;
     } else if (reenlistRoll == 12) {
-        t.history.push('Manditory reenlistment for ' +
+        t.history.push('Mandatory reenlistment for ' +
             intToOrdinal(t.terms + 1) + ' term.');
     } else if (t.terms >= 7) {
         t.activeDuty = false;
@@ -1792,6 +3678,17 @@ if (t.urlParam('maxchars') != '') {
 }
 
 while (t.activeDuty && (! t.deceased)) {
+	if (t.service == 'nobles') {
+		if (t.attributes['social'] < 10) {
+			t.attributes['social'] = 10;
+		}
+		if (t.attributes['social'] == 11) {
+			t.rank = 1;
+		}
+		if (t.attributes['social'] == 12) {
+			t.rank = 2;
+		}
+	}
     t.doServiceTerm();
     t.doAging();
     if (! t.deceased) {
